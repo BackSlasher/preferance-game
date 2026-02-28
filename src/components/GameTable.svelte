@@ -39,6 +39,7 @@
 
   let selectedDiscards = $state<Card[]>([]);
   let showScoreOverlay = $state(false);
+  let scoreOverlayManual = $state(false);
   let showGameLog = $state(false);
   let toastMessage = $state('');
   let toastVisible = $state(false);
@@ -160,12 +161,14 @@
     if (phase !== prevPhase) {
       if (phase === GamePhase.Dealing && prevPhase === GamePhase.HandScoring) {
         showScoreOverlay = true;
+        scoreOverlayManual = false;
       }
       if (phase === GamePhase.Raspasovka) {
         toast('All pass! Raspasovka');
       }
       if (phase === GamePhase.GameOver) {
         showScoreOverlay = true;
+        scoreOverlayManual = false;
       }
       prevPhase = phase;
     }
@@ -199,7 +202,7 @@
     {/if}
     <div class="status-right">
       <span class="hand-num">Hand #{state.handNumber}</span>
-      <button class="log-btn" onclick={() => showScoreOverlay = true} title="Scores">SCORE</button>
+      <button class="log-btn" onclick={() => { showScoreOverlay = true; scoreOverlayManual = true; }} title="Scores">SCORE</button>
       <button class="log-btn" onclick={() => showGameLog = true} title="Game log">LOG</button>
       <a class="help-link" href="/instructions">?</a>
       <button class="new-game-btn" onclick={handleNewGame} title="New game">NEW</button>
@@ -316,6 +319,7 @@
       scores={state.scores}
       names={NAMES}
       poolTarget={state.settings.poolTarget}
+      continueLabel={scoreOverlayManual ? 'Close' : (state.phase === GamePhase.GameOver ? 'Game Over' : 'Next Hand')}
       onContinue={handleScoreContinue}
     />
   {/if}

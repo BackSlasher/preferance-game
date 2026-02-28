@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   whistType: 'greedy',
   misereMode: 'selfish',
   gameOfTen: true,
+  endCondition: 'all',
   debugLog: false,
 };
 

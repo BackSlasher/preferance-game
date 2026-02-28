@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   whistType: 'greedy',
   misereMode: 'selfish',
   gameOfTen: true,
+  endCondition: 'all',
   debugLog: false,
 };
 
@@ -338,7 +339,7 @@ function applyScoreHand(s: GameState): GameState {
   }
 
   // Check game over
-  if (isGameOver(s.scores, s.settings.poolTarget)) {
+  if (isGameOver(s.scores, s.settings.poolTarget, s.settings.endCondition)) {
     s.phase = GamePhase.GameOver;
   } else {
     // Ready for next hand

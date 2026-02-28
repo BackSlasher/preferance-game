@@ -38,7 +38,7 @@
       <p>32 cards · Pool to {settings.poolTarget}</p>
       <p>{settings.stalingrad ? 'Mandatory whist on 6♠' : 'No mandatory whist'}</p>
       <p>{whistLabel} · {misereLabel}</p>
-      <p>Defenders always whist on 10</p>
+      <p>Ends when {settings.endCondition === 'all' ? 'all fill pool' : 'any fills pool'}</p>
     </div>
   </div>
 </div>

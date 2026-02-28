@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getSettings, updateSettings } from '../state/settings.svelte';
+  import { DEBUG_PREFIX, restartHand } from '../state/game-store.svelte';
 
   interface Props {
     log: string[];
@@ -10,16 +11,25 @@
 
   const settings = $derived(getSettings());
 
+  const filteredLog = $derived(
+    settings.debugLog ? log.map(e => e.startsWith(DEBUG_PREFIX) ? e.slice(1) : e) : log.filter(e => !e.startsWith(DEBUG_PREFIX))
+  );
+
   let scrollEl = $state<HTMLDivElement | null>(null);
 
   $effect(() => {
-    if (scrollEl && log.length) {
+    if (scrollEl && filteredLog.length) {
       scrollEl.scrollTop = scrollEl.scrollHeight;
     }
   });
 
   function toggleDebug() {
     updateSettings({ debugLog: !settings.debugLog });
+  }
+
+  function handleRestart() {
+    restartHand();
+    onClose();
   }
 </script>
 
@@ -37,12 +47,15 @@
       </div>
     </div>
     <div class="log-content" bind:this={scrollEl}>
-      {#each log as entry}
+      {#each filteredLog as entry}
         <div class="log-entry" class:separator={entry.startsWith('---')} class:indent={entry.startsWith('  ')}>{entry}</div>
       {/each}
-      {#if log.length === 0}
+      {#if filteredLog.length === 0}
         <div class="log-empty">No actions yet.</div>
       {/if}
+    </div>
+    <div class="log-footer">
+      <button class="restart-btn" onclick={handleRestart}>Restart Hand</button>
     </div>
   </div>
 </div>
@@ -150,5 +163,24 @@
     text-align: center;
     padding: 20px 0;
     font-size: 0.85em;
+  }
+
+  .log-footer {
+    padding: 8px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+  }
+
+  .restart-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 0.75em;
+    font-weight: bold;
+    background: rgba(244, 67, 54, 0.3);
+    color: #f44336;
+  }
+
+  .restart-btn:hover {
+    background: rgba(244, 67, 54, 0.5);
   }
 </style>

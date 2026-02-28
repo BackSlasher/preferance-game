@@ -123,38 +123,31 @@ function formatScoreSummary(): string {
   return lines.join('\n');
 }
 
-function isDebug(): boolean {
-  return gameState.settings.debugLog;
-}
+export const DEBUG_PREFIX = '\x01'; // invisible marker for debug log entries
 
 function logDebug(msg: string) {
-  if (isDebug()) {
-    gameLog.push(msg);
-  }
+  gameLog.push(DEBUG_PREFIX + msg);
 }
 
 function logHandsDebug() {
-  if (!isDebug()) return;
   for (const seat of ALL_SEATS) {
     const hand = gameState.hands[seat].map(cardName).join(' ');
-    gameLog.push(`  [${SEAT_NAMES[seat]}] ${hand}`);
+    logDebug(`  [${SEAT_NAMES[seat]}] ${hand}`);
   }
 }
 
 function dispatch(action: GameAction) {
-  // Pre-dispatch debug: log AI reasoning before the action
-  if (isDebug()) {
-    if (action.type === 'bid' && action.seat !== PlayerSeat.South) {
-      const reasoning = explainBidReasoning(gameState.hands[action.seat], gameState.highBid);
-      gameLog.push(`  [${SEAT_NAMES[action.seat]} reasoning]\n${reasoning}`);
-    }
-    if (action.type === 'whist_decision' && action.seat !== PlayerSeat.South) {
-      gameLog.push(`  [${SEAT_NAMES[action.seat]} hand] ${gameState.hands[action.seat].map(cardName).join(' ')}`);
-    }
-    if (action.type === 'play_card' && action.seat !== PlayerSeat.South) {
-      const hand = gameState.hands[action.seat].map(cardName).join(' ');
-      gameLog.push(`  [${SEAT_NAMES[action.seat]} hand] ${hand}`);
-    }
+  // Pre-dispatch debug: always log AI reasoning (filtered by UI)
+  if (action.type === 'bid' && action.seat !== PlayerSeat.South) {
+    const reasoning = explainBidReasoning(gameState.hands[action.seat], gameState.highBid);
+    logDebug(`  [${SEAT_NAMES[action.seat]} reasoning]\n${reasoning}`);
+  }
+  if (action.type === 'whist_decision' && action.seat !== PlayerSeat.South) {
+    logDebug(`  [${SEAT_NAMES[action.seat]} hand] ${gameState.hands[action.seat].map(cardName).join(' ')}`);
+  }
+  if (action.type === 'play_card' && action.seat !== PlayerSeat.South) {
+    const hand = gameState.hands[action.seat].map(cardName).join(' ');
+    logDebug(`  [${SEAT_NAMES[action.seat]} hand] ${hand}`);
   }
 
   logAction(action);
@@ -268,6 +261,13 @@ export function resetGame() {
   gameLog = [];
   gameState = createGameState(getSettings());
   clearSave();
+}
+
+export function restartHand() {
+  isProcessing = false;
+  gameLog.push('--- Hand restarted (debug) ---');
+  dispatch({ type: 'deal' });
+  processAITurns();
 }
 
 export async function playerBid(bid: BidAction) {

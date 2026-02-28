@@ -123,6 +123,34 @@
       </div>
     </section>
 
+    <section>
+      <label class="setting-label">Game ends when</label>
+      <div class="radio-group">
+        <button
+          class="radio-option"
+          class:active={settings.endCondition === 'all'}
+          onclick={() => updateSettings({ endCondition: 'all' })}
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">All players fill pool</span>
+            <span class="radio-desc">Traditional Sochi rule — game continues until everyone reaches the target</span>
+          </div>
+        </button>
+        <button
+          class="radio-option"
+          class:active={settings.endCondition === 'any'}
+          onclick={() => updateSettings({ endCondition: 'any' })}
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">Any player fills pool</span>
+            <span class="radio-desc">Shorter games — ends as soon as one player reaches the target</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
     <section class="reset-section">
       <button class="reset-btn" onclick={resetSettings}>
         Reset to Defaults

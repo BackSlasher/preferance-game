@@ -6,10 +6,11 @@
     scores: Record<PlayerSeat, PlayerScore>;
     names: Record<PlayerSeat, string>;
     poolTarget: number;
+    continueLabel?: string;
     onContinue: () => void;
   }
 
-  let { scores, names, poolTarget, onContinue }: Props = $props();
+  let { scores, names, poolTarget, continueLabel = 'Next Hand', onContinue }: Props = $props();
 
   function totalWhists(seat: PlayerSeat): number {
     const w = scores[seat].whists;
@@ -47,7 +48,7 @@
     </table>
 
     <button class="continue-btn" onclick={onContinue}>
-      Next Hand
+      {continueLabel}
     </button>
   </div>
 </div>

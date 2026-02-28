@@ -281,10 +281,12 @@ export function finalSettlement(
   return finalScores;
 }
 
-/** Check if the game should end (all players reached pool target) */
+/** Check if the game should end */
 export function isGameOver(
   scores: Record<PlayerSeat, PlayerScore>,
   poolTarget: number,
+  endCondition: 'all' | 'any' = 'all',
 ): boolean {
-  return ALL_SEATS.every(s => scores[s].pool >= poolTarget);
+  const check = endCondition === 'all' ? ALL_SEATS.every : ALL_SEATS.some;
+  return check.call(ALL_SEATS, s => scores[s].pool >= poolTarget);
 }
