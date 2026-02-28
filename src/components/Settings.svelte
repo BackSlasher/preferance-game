@@ -96,7 +96,7 @@
       <div class="toggle-row">
         <div>
           <label class="setting-label">Game of 10</label>
-          <p class="setting-desc">10-contract wins automatically, no whisting</p>
+          <p class="setting-desc">Defenders cannot whist against a 10-contract</p>
         </div>
         <button
           class="toggle"
