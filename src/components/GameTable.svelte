@@ -50,11 +50,13 @@
   const showTalon = $derived(
     state.phase === GamePhase.TalonReveal ||
     state.phase === GamePhase.Discarding ||
-    state.phase === GamePhase.ContractDeclaration
+    state.phase === GamePhase.ContractDeclaration ||
+    state.phase === GamePhase.Raspasovka ||
+    state.phase === GamePhase.RaspasovkaTrickPlay
   );
 
   const showBidding = $derived(
-    state.phase === GamePhase.Bidding && isPlayerTurn
+    state.phase === GamePhase.Bidding
   );
 
   const showWhisting = $derived(
@@ -217,8 +219,11 @@
     {#if showBidding}
       <BiddingPanel
         currentHighBid={state.highBid}
+        highBidder={state.highBidder}
+        bids={state.bids}
         seat={PlayerSeat.South}
         dealer={state.dealer}
+        canBid={isPlayerTurn}
         onBid={playerBid}
       />
     {:else if showDiscard}

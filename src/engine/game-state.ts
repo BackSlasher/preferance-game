@@ -306,6 +306,7 @@ function applyStartRaspasovka(s: GameState): GameState {
   s.raspasovkaStreak++;
   s.raspasovkaMultiplier = nextRaspasovkaMultiplier(s.raspasovkaStreak - 1);
   s.contract = null;
+  s.talonRevealed = true; // Talon is shown face-up to indicate forced lead suits
 
   s.phase = GamePhase.RaspasovkaTrickPlay;
   s.activePlayer = eldestHand(s.dealer);
@@ -406,7 +407,7 @@ export function getPlayHint(state: GameState): string | null {
         const suitSymbols = ['♠', '♣', '♦', '♥'];
         const hasSuit = hand.some(c => c.suit === forcedSuit);
         if (hasSuit) {
-          return `Raspasovka — must lead ${suitSymbols[forcedSuit]} (from talon)`;
+          return `Must lead ${suitSymbols[forcedSuit]} (from talon)`;
         }
       }
       return 'Your lead — play any card';
