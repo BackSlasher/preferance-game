@@ -201,16 +201,6 @@ function applyDeclareContract(s: GameState, bid: WinningBid): GameState {
     s.phase = GamePhase.TrickPlay;
     s.activePlayer = eldestHand(s.dealer);
     s.currentTrick = createTrick(s.activePlayer);
-  } else if (s.settings.gameOfTen && bid.type === 'suit' && bid.tricks === 10) {
-    // 10-contract: no whisting allowed, but declarer must play tricks out
-    const defenders = ALL_SEATS.filter(s2 => s2 !== declarer);
-    s.whistDecisions = {};
-    for (const d of defenders) {
-      s.whistDecisions[d] = 'pass';
-    }
-    s.phase = GamePhase.TrickPlay;
-    s.activePlayer = eldestHand(s.dealer);
-    s.currentTrick = createTrick(s.activePlayer);
   } else {
     // Normal contract: defenders decide
     s.phase = GamePhase.Whisting;

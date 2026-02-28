@@ -52,58 +52,71 @@
 
     <section>
       <label class="setting-label">Whist type</label>
-      <div class="segment-control">
+      <div class="radio-group">
         <button
-          class="segment"
+          class="radio-option"
           class:active={settings.whistType === 'greedy'}
           onclick={() => updateSettings({ whistType: 'greedy' })}
-        >Greedy</button>
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">Greedy</span>
+            <span class="radio-desc">Solo whister gets credit for all defensive tricks</span>
+          </div>
+        </button>
         <button
-          class="segment"
+          class="radio-option"
           class:active={settings.whistType === 'responsible'}
           onclick={() => updateSettings({ whistType: 'responsible' })}
-        >Responsible</button>
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">Responsible</span>
+            <span class="radio-desc">Each defender gets credit only for their own tricks</span>
+          </div>
+        </button>
       </div>
-      <p class="setting-desc">
-        {settings.whistType === 'greedy'
-          ? 'Solo whister gets credit for all defensive tricks'
-          : 'Each defender gets credit only for their own tricks'}
-      </p>
     </section>
 
     <section>
       <label class="setting-label">Misere mode</label>
-      <div class="segment-control">
+      <div class="radio-group">
         <button
-          class="segment"
+          class="radio-option"
           class:active={settings.misereMode === 'selfish'}
           onclick={() => updateSettings({ misereMode: 'selfish' })}
-        >Selfish</button>
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">Selfish</span>
+            <span class="radio-desc">Defenders play independently</span>
+          </div>
+        </button>
         <button
-          class="segment"
+          class="radio-option"
           class:active={settings.misereMode === 'cooperative'}
           onclick={() => updateSettings({ misereMode: 'cooperative' })}
-        >Cooperative</button>
+        >
+          <span class="radio-dot"></span>
+          <div>
+            <span class="radio-title">Cooperative</span>
+            <span class="radio-desc">Defenders coordinate against declarer</span>
+          </div>
+        </button>
       </div>
-      <p class="setting-desc">
-        {settings.misereMode === 'selfish'
-          ? 'Defenders play independently'
-          : 'Defenders coordinate against declarer'}
-      </p>
     </section>
 
-    <section>
+    <section class="disabled-section">
       <div class="toggle-row">
         <div>
           <label class="setting-label">Game of 10</label>
-          <p class="setting-desc">Defenders cannot whist against a 10-contract</p>
+          <p class="setting-desc">Defenders always whist against 10-contract (auto-win disabled to prevent bluffing)</p>
         </div>
         <button
           class="toggle"
-          class:on={settings.gameOfTen}
-          onclick={() => updateSettings({ gameOfTen: !settings.gameOfTen })}
+          disabled
           role="switch"
-          aria-checked={settings.gameOfTen}
+          aria-checked={false}
         >
           <span class="toggle-knob"></span>
         </button>
@@ -181,6 +194,65 @@
     font-size: 0.8em;
     margin-top: 6px;
     line-height: 1.4;
+  }
+
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    text-align: left;
+    transition: background 0.15s;
+  }
+
+  .radio-option:hover {
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .radio-option.active {
+    background: rgba(212, 168, 67, 0.15);
+  }
+
+  .radio-dot {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--text-muted);
+    margin-top: 1px;
+    transition: all 0.15s;
+  }
+
+  .radio-option.active .radio-dot {
+    border-color: var(--gold);
+    background: radial-gradient(circle, var(--gold) 40%, transparent 45%);
+  }
+
+  .radio-title {
+    display: block;
+    color: var(--text-light);
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  .radio-option.active .radio-title {
+    color: var(--gold);
+  }
+
+  .radio-desc {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78em;
+    line-height: 1.4;
+    margin-top: 2px;
   }
 
   .segment-control {
@@ -266,5 +338,13 @@
   .reset-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     color: var(--text-light);
+  }
+
+  .disabled-section {
+    opacity: 0.5;
+  }
+
+  .toggle:disabled {
+    cursor: not-allowed;
   }
 </style>

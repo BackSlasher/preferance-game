@@ -38,7 +38,7 @@
       <p>32 cards · Pool to {settings.poolTarget}</p>
       <p>{settings.stalingrad ? 'Mandatory whist on 6♠' : 'No mandatory whist'}</p>
       <p>{whistLabel} · {misereLabel}</p>
-      <p>{settings.gameOfTen ? 'Game of 10 enabled' : 'Game of 10 disabled'}</p>
+      <p>Defenders always whist on 10</p>
     </div>
   </div>
 </div>
