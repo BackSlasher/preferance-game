@@ -17,7 +17,7 @@ describe('game-state', () => {
   it('creates initial state', () => {
     const state = createGameState();
     expect(state.phase).toBe(GamePhase.NotStarted);
-    expect(state.poolTarget).toBe(20);
+    expect(state.settings.poolTarget).toBe(20);
     expect(state.handNumber).toBe(0);
   });
 

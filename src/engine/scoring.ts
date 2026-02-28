@@ -3,6 +3,7 @@ import {
   type PlayerScore,
   type Contract,
   type WinningBid,
+  type GameSettings,
   ALL_SEATS,
 } from './types';
 import { CONTRACT_VALUES, MISERE_VALUE, WHIST_OBLIGATIONS } from './constants';
@@ -48,6 +49,7 @@ export function scoreContract(
   trickCounts: Record<PlayerSeat, number>,
   whistDecisions: Partial<Record<PlayerSeat, string>>,
   poolTarget: number,
+  whistType: GameSettings['whistType'] = 'greedy',
 ): void {
   const { declarer, bid } = contract;
   const value = contractValue(bid);
@@ -70,7 +72,7 @@ export function scoreContract(
 
     // Whisters earn whist points for defensive tricks
     if (whisters.length > 0) {
-      scoreWhistPoints(scores, declarer, whisters, trickCounts, value);
+      scoreWhistPoints(scores, declarer, whisters, trickCounts, value, whistType);
     }
   } else {
     // Failure: declarer gets dump, defenders get whist compensation
@@ -151,16 +153,17 @@ function scoreWhistPoints(
   whisters: PlayerSeat[],
   trickCounts: Record<PlayerSeat, number>,
   value: number,
+  whistType: GameSettings['whistType'],
 ): void {
-  // Greedy whist: single whister gets ALL defensive tricks' worth
-  if (whisters.length === 1) {
+  if (whistType === 'greedy' && whisters.length === 1) {
+    // Greedy whist: single whister gets ALL defensive tricks' worth
     const whister = whisters[0];
     const allDefTricks = ALL_SEATS
       .filter(s => s !== declarer)
       .reduce((sum, s) => sum + trickCounts[s], 0);
     scores[whister].whists[declarer] += allDefTricks * value;
   } else {
-    // Both whist: each gets their own tricks' worth
+    // Responsible whist (or both whisting): each gets their own tricks' worth
     for (const whister of whisters) {
       scores[whister].whists[declarer] += trickCounts[whister] * value;
     }

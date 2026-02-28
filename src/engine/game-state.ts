@@ -2,6 +2,7 @@ import {
   GamePhase,
   type GameState,
   type GameAction,
+  type GameSettings,
   type PlayerSeat,
   type Card,
   type Contract,
@@ -16,10 +17,18 @@ import { isBiddingComplete, bidSuitToTrump } from './bidding';
 import { legalPlays, trickWinner, createTrick, isTrickComplete, getLeadSuit, explainLegalPlays } from './trick';
 import { createScores, scoreContract, scoreRaspasovka, isGameOver } from './scoring';
 import { raspasovkaLeadSuit, nextRaspasovkaMultiplier } from './raspasovka';
-import { DEFAULT_POOL_TARGET, WHIST_OBLIGATIONS } from './constants';
+import { WHIST_OBLIGATIONS } from './constants';
+
+const DEFAULT_SETTINGS: GameSettings = {
+  poolTarget: 20,
+  stalingrad: true,
+  whistType: 'greedy',
+  misereMode: 'selfish',
+  gameOfTen: true,
+};
 
 /** Create the initial game state */
-export function createGameState(poolTarget: number = DEFAULT_POOL_TARGET): GameState {
+export function createGameState(settings: GameSettings = DEFAULT_SETTINGS): GameState {
   return {
     phase: GamePhase.NotStarted,
     hands: { 0: [], 1: [], 2: [] },
@@ -39,7 +48,7 @@ export function createGameState(poolTarget: number = DEFAULT_POOL_TARGET): GameS
     currentTrick: null,
     trickCounts: { 0: 0, 1: 0, 2: 0 },
     scores: createScores(),
-    poolTarget,
+    settings,
     handNumber: 0,
     raspasovkaStreak: 0,
     raspasovkaMultiplier: 1,
@@ -191,7 +200,7 @@ function applyDeclareContract(s: GameState, bid: WinningBid): GameState {
     s.phase = GamePhase.TrickPlay;
     s.activePlayer = eldestHand(s.dealer);
     s.currentTrick = createTrick(s.activePlayer);
-  } else if (bid.type === 'suit' && bid.tricks === 10) {
+  } else if (s.settings.gameOfTen && bid.type === 'suit' && bid.tricks === 10) {
     // 10-contract: no whisting allowed, declarer wins automatically
     const defenders = ALL_SEATS.filter(s2 => s2 !== declarer);
     s.whistDecisions = {};
@@ -204,7 +213,7 @@ function applyDeclareContract(s: GameState, bid: WinningBid): GameState {
     // Normal contract: defenders decide
     s.phase = GamePhase.Whisting;
     // Mandatory whist on 6♠ (Stalingrad)
-    if (bid.type === 'suit' && bid.tricks === 6 && bid.suit === BidSuit.Spades) {
+    if (s.settings.stalingrad && bid.type === 'suit' && bid.tricks === 6 && bid.suit === BidSuit.Spades) {
       const defenders = ALL_SEATS.filter(s2 => s2 !== declarer);
       s.whistDecisions = {};
       for (const d of defenders) {
@@ -324,7 +333,8 @@ function applyScoreHand(s: GameState): GameState {
         s.contract,
         s.trickCounts,
         s.whistDecisions,
-        s.poolTarget,
+        s.settings.poolTarget,
+        s.settings.whistType,
       );
       // Reset raspasovka streak on any played contract
       s.raspasovkaStreak = 0;
@@ -336,7 +346,7 @@ function applyScoreHand(s: GameState): GameState {
   }
 
   // Check game over
-  if (isGameOver(s.scores, s.poolTarget)) {
+  if (isGameOver(s.scores, s.settings.poolTarget)) {
     s.phase = GamePhase.GameOver;
   } else {
     // Ready for next hand

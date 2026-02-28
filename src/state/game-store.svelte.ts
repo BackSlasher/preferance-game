@@ -13,6 +13,7 @@ import { createGameState, applyAction, getLegalPlays, getPlayHint } from '../eng
 import { getAIAction } from '../ai/ai-player';
 import { delay, randomInt } from '../lib/utils';
 import { cardName } from '../engine/card';
+import { getSettings } from './settings.svelte';
 
 const AI_DELAY_MIN = 600;
 const AI_DELAY_MAX = 1200;
@@ -217,7 +218,7 @@ if (saved && saved.state.phase !== GamePhase.NotStarted && isAITurn()) {
 
 export function startNewGame() {
   gameLog = [];
-  gameState = createGameState();
+  gameState = createGameState(getSettings());
   dispatch({ type: 'start_game' });
   dispatch({ type: 'deal' });
   processAITurns();
@@ -225,7 +226,7 @@ export function startNewGame() {
 
 export function resetGame() {
   gameLog = [];
-  gameState = createGameState();
+  gameState = createGameState(getSettings());
   clearSave();
 }
 

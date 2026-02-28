@@ -96,6 +96,14 @@ export enum GamePhase {
   GameOver = 'game_over',
 }
 
+export interface GameSettings {
+  poolTarget: number;
+  stalingrad: boolean;
+  whistType: 'greedy' | 'responsible';
+  misereMode: 'selfish' | 'cooperative';
+  gameOfTen: boolean;
+}
+
 export interface GameState {
   phase: GamePhase;
   /** Cards in each player's hand */
@@ -128,8 +136,8 @@ export interface GameState {
   trickCounts: Record<PlayerSeat, number>;
   /** Cumulative scores across the game */
   scores: Record<PlayerSeat, PlayerScore>;
-  /** Pool target (default 20) */
-  poolTarget: number;
+  /** Game settings/conventions */
+  settings: GameSettings;
   handNumber: number;
   /** Consecutive raspasovka count (for escalating multiplier) */
   raspasovkaStreak: number;

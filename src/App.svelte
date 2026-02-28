@@ -4,6 +4,7 @@
   import GameTable from './components/GameTable.svelte';
   import MenuScreen from './components/MenuScreen.svelte';
   import Instructions from './components/Instructions.svelte';
+  import Settings from './components/Settings.svelte';
 
   const state = $derived(getState());
   const inGame = $derived(state.phase !== GamePhase.NotStarted);
@@ -30,6 +31,10 @@
     navigate('/instructions');
   }
 
+  function handleSettings() {
+    navigate('/settings');
+  }
+
   function handleBack() {
     history.back();
   }
@@ -38,10 +43,12 @@
 <main>
   {#if path === '/instructions'}
     <Instructions onBack={handleBack} />
+  {:else if path === '/settings'}
+    <Settings onBack={handleBack} />
   {:else if inGame}
     <GameTable />
   {:else}
-    <MenuScreen onNewGame={handleNewGame} onHowToPlay={handleHowToPlay} />
+    <MenuScreen onNewGame={handleNewGame} onHowToPlay={handleHowToPlay} onSettings={handleSettings} />
   {/if}
 </main>
 

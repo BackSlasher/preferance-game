@@ -1,10 +1,18 @@
 <script lang="ts">
+  import { getSettings } from '../state/settings.svelte';
+
   interface Props {
     onNewGame: () => void;
     onHowToPlay: () => void;
+    onSettings: () => void;
   }
 
-  let { onNewGame, onHowToPlay }: Props = $props();
+  let { onNewGame, onHowToPlay, onSettings }: Props = $props();
+
+  const settings = $derived(getSettings());
+
+  const whistLabel = $derived(settings.whistType === 'greedy' ? 'Greedy whist' : 'Responsible whist');
+  const misereLabel = $derived(settings.misereMode === 'selfish' ? 'Selfish misere' : 'Cooperative misere');
 </script>
 
 <div class="menu-screen">
@@ -17,14 +25,20 @@
       New Game
     </button>
 
-    <button class="howto-btn" onclick={onHowToPlay}>
-      How to Play
-    </button>
+    <div class="menu-buttons">
+      <button class="howto-btn" onclick={onHowToPlay}>
+        How to Play
+      </button>
+      <button class="howto-btn" onclick={onSettings}>
+        Settings
+      </button>
+    </div>
 
     <div class="rules-summary">
-      <p>32 cards · Pool to 20</p>
-      <p>Mandatory whist on 6♠</p>
-      <p>Greedy whist · Selfish misere</p>
+      <p>32 cards · Pool to {settings.poolTarget}</p>
+      <p>{settings.stalingrad ? 'Mandatory whist on 6♠' : 'No mandatory whist'}</p>
+      <p>{whistLabel} · {misereLabel}</p>
+      <p>{settings.gameOfTen ? 'Game of 10 enabled' : 'Game of 10 disabled'}</p>
     </div>
   </div>
 </div>
@@ -84,10 +98,15 @@
     transform: translateY(0);
   }
 
+  .menu-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
   .howto-btn {
-    display: block;
-    margin: 12px auto 0;
-    padding: 10px 32px;
+    padding: 10px 24px;
     border-radius: 10px;
     font-size: 1em;
     font-weight: bold;
