@@ -136,6 +136,8 @@
     overflow-y: auto;
     padding: 8px 12px;
     -webkit-overflow-scrolling: touch;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   .log-entry {

@@ -150,8 +150,14 @@ function dispatch(action: GameAction) {
     logDebug(`  [${SEAT_NAMES[action.seat]} hand] ${hand}`);
   }
 
-  logAction(action);
+  // Log score_hand AFTER applying so it shows post-scoring values
+  if (action.type !== 'score_hand') {
+    logAction(action);
+  }
   gameState = applyAction(gameState, action);
+  if (action.type === 'score_hand') {
+    logAction(action);
+  }
 
   // Post-dispatch debug: log hands after deal
   if (action.type === 'deal' || action.type === 'next_hand') {
