@@ -26,7 +26,7 @@
   {#each cards as card, i}
     {@const offset = i - (cards.length - 1) / 2}
     {@const rotation = offset * spreadAngle}
-    {@const yShift = Math.abs(offset) * 2.5}
+    {@const yShift = offset * offset * 1.2}
     <div
       class="card-slot"
       style="transform: rotate({rotation}deg) translateY({yShift}px); z-index: {i}"

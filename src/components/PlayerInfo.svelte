@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PlayerScore } from '../engine/types';
+  import { type PlayerScore, ALL_SEATS } from '../engine/types';
 
   interface Props {
     name: string;
@@ -12,6 +12,8 @@
   }
 
   let { name, score, isActive, isDealer, isDeclarer, contractLabel, trickCount }: Props = $props();
+
+  const totalWhists = $derived(ALL_SEATS.reduce((sum, s) => sum + (score.whists[s] ?? 0), 0));
 </script>
 
 <div class="player-info" class:active={isActive} class:declarer={isDeclarer}>
@@ -24,11 +26,10 @@
     <div class="contract-label">{contractLabel}</div>
   {/if}
   <div class="player-stats">
-    <span class="stat pool" title="Pool">{score.pool}</span>
-    <span class="stat-sep">/</span>
-    <span class="stat dump" title="Dump">{score.dump}</span>
-    <span class="stat-sep">·</span>
-    <span class="stat tricks" title="Tricks this hand">{trickCount}t</span>
+    <span class="stat pool"><span class="label">P</span>{score.pool}</span>
+    <span class="stat dump"><span class="label">D</span>{score.dump}</span>
+    <span class="stat whist"><span class="label">W</span>{totalWhists}</span>
+    <span class="stat tricks">{trickCount}t</span>
   </div>
 </div>
 
@@ -89,12 +90,26 @@
   }
 
   .player-stats {
-    font-size: 0.75em;
-    color: var(--text-muted);
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    font-size: 0.7em;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .label {
+    font-size: 0.8em;
+    opacity: 0.6;
+    margin-right: 1px;
   }
 
   .stat.pool { color: #4caf50; }
   .stat.dump { color: #f44336; }
-  .stat.tricks { color: var(--text-light); }
-  .stat-sep { margin: 0 2px; opacity: 0.5; }
+  .stat.whist { color: #90caf9; }
+  .stat.tricks { color: var(--text-muted); }
 </style>
