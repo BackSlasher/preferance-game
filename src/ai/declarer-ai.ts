@@ -82,7 +82,7 @@ export function decideContract(
 
   // Only raise if clearly strong enough
   const currentIdx = bidIndex(winningBid);
-  const RAISE_MARGIN = 1.0;
+  const RAISE_MARGIN = 0.5;
 
   for (let i = BID_LADDER.length - 1; i > currentIdx; i--) {
     const candidate = BID_LADDER[i];

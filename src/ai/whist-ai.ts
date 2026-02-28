@@ -51,16 +51,25 @@ export function decideWhist(
 function estimateDefensiveTricks(hand: Card[], trump: Suit | null): number {
   let tricks = 0;
 
-  // Count aces (almost always win a trick on defense)
+  // Count high cards by suit context
+  const suitCounts: Record<number, number> = {};
   for (const card of hand) {
+    suitCounts[card.suit] = (suitCounts[card.suit] ?? 0) + 1;
+  }
+
+  for (const card of hand) {
+    const len = suitCounts[card.suit] ?? 0;
     if (card.rank === 14) tricks += 0.9; // Ace
     else if (card.rank === 13) tricks += 0.4; // King
+    else if (card.rank === 12 && len >= 2) tricks += 0.25; // Queen with support
+    else if (card.rank === 11 && len >= 3) tricks += 0.1; // Jack with length
   }
 
   // Trump holdings on defense
   if (trump !== null) {
     const trumpCount = hand.filter(c => c.suit === trump).length;
-    if (trumpCount >= 3) tricks += 0.5; // Long trump on defense = ruffing declarer
+    if (trumpCount >= 3) tricks += 0.6;
+    else if (trumpCount >= 2) tricks += 0.3;
   }
 
   return tricks;

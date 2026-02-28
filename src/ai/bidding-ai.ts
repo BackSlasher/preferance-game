@@ -41,14 +41,16 @@ export function decideBid(
   const valid = getValidBids(currentHighBid, seat, dealer);
 
   // Safety margin: slight buffer above bid level
-  const SAFETY = 0.3;
+  const SAFETY = 0.1;
+  // Talon pickup typically adds ~0.8 tricks (2 new cards, discard 2 worst)
+  const TALON_BONUS = 0.7;
 
   // Find the best suit and its expected tricks
   const bestSuit = bestTrumpSuit(eval_);
   const bestExpected = eval_.expectedTricks[bestSuit];
 
   // Consider misere if viable (high threshold — misere failure is very costly)
-  if (eval_.misereViability > 0.85) {
+  if (eval_.misereViability > 0.80) {
     const misereBid: WinningBid = { type: 'misere' };
     if (valid.some(b => b.type === 'misere')) {
       return misereBid;
@@ -67,10 +69,10 @@ export function decideBid(
     if (bid.type === 'pass' || bid.type === 'misere') continue;
     if (bid.type !== 'suit') continue;
 
-    const suitExpected = eval_.expectedTricks[bid.suit];
+    const suitExpected = eval_.expectedTricks[bid.suit] + TALON_BONUS;
     if (suitExpected >= bid.tricks + margin) {
       bestBid = bid;
-    } else if (bid.suit === bestSuit && bestExpected >= bid.tricks + margin) {
+    } else if (bid.suit === bestSuit && bestExpected + TALON_BONUS >= bid.tricks + margin) {
       bestBid = bid;
     }
   }

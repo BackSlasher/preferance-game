@@ -62,21 +62,21 @@ function estimateTricks(
       for (let i = 0; i < suitCards.length; i++) {
         const card = suitCards[i];
         if (card.rank === Rank.Ace) tricks += 1.0;
-        else if (card.rank === Rank.King) tricks += trumpLen >= 2 ? 0.9 : 0.5;
-        else if (card.rank === Rank.Queen) tricks += trumpLen >= 3 ? 0.8 : 0.3;
-        else if (card.rank === Rank.Jack) tricks += trumpLen >= 3 ? 0.6 : 0.2;
-        else if (i >= 3) tricks += 0.7; // Long trump: opponents likely out
+        else if (card.rank === Rank.King) tricks += trumpLen >= 2 ? 0.95 : 0.6;
+        else if (card.rank === Rank.Queen) tricks += trumpLen >= 3 ? 0.85 : 0.4;
+        else if (card.rank === Rank.Jack) tricks += trumpLen >= 3 ? 0.7 : 0.3;
+        else if (i >= 3) tricks += 0.75; // Long trump: opponents likely out
       }
     } else {
       // Side suit tricks
       for (const card of suitCards) {
         if (card.rank === Rank.Ace) tricks += 0.95;
-        else if (card.rank === Rank.King && suitCards.length >= 2) tricks += 0.7;
-        else if (card.rank === Rank.Queen && suitCards.length >= 3) tricks += 0.4;
+        else if (card.rank === Rank.King && suitCards.length >= 2) tricks += 0.8;
+        else if (card.rank === Rank.Queen && suitCards.length >= 3) tricks += 0.5;
       }
       // Void/singleton ruffing potential
-      if (suitLengths[suit] === 0 && trumpLen > 0) tricks += Math.min(trumpLen - 1, 2) * 0.7;
-      else if (suitLengths[suit] === 1 && trumpLen > 1) tricks += 0.5;
+      if (suitLengths[suit] === 0 && trumpLen > 0) tricks += Math.min(trumpLen - 1, 2) * 0.8;
+      else if (suitLengths[suit] === 1 && trumpLen > 1) tricks += 0.65;
     }
   }
 
@@ -94,11 +94,11 @@ function estimateTricksNT(hand: Card[], suitLengths: Record<Suit, number>): numb
     for (let i = 0; i < suitCards.length; i++) {
       const card = suitCards[i];
       if (card.rank === Rank.Ace) tricks += 1.0;
-      else if (card.rank === Rank.King && suitCards.length >= 2) tricks += 0.8;
-      else if (card.rank === Rank.Queen && suitCards.length >= 3) tricks += 0.5;
-      else if (card.rank === Rank.Jack && suitCards.length >= 4) tricks += 0.3;
+      else if (card.rank === Rank.King && suitCards.length >= 2) tricks += 0.85;
+      else if (card.rank === Rank.Queen && suitCards.length >= 3) tricks += 0.6;
+      else if (card.rank === Rank.Jack && suitCards.length >= 4) tricks += 0.4;
       // Long suit establishment: with A-K or A-Q heading, low cards can run
-      else if (i >= 3 && suitCards[0].rank >= Rank.King) tricks += 0.5;
+      else if (i >= 3 && suitCards[0].rank >= Rank.King) tricks += 0.6;
     }
   }
 
@@ -110,8 +110,8 @@ function evaluateMisere(hand: Card[], suitLengths: Record<Suit, number>): number
 
   for (const card of hand) {
     // High cards are terrible for misere (can win tricks)
-    if (card.rank === Rank.Ace) score -= 0.35;
-    else if (card.rank === Rank.King) score -= 0.2;
+    if (card.rank === Rank.Ace) score -= 0.3;
+    else if (card.rank === Rank.King) score -= 0.18;
     else if (card.rank === Rank.Queen) score -= 0.1;
     else if (card.rank === Rank.Ten) score -= 0.05;
     // Low cards are good
