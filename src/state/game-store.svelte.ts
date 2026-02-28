@@ -1,6 +1,7 @@
 import {
   GamePhase,
   PlayerSeat,
+  BidSuit,
   type GameState,
   type GameAction,
   type Card,
@@ -11,16 +12,109 @@ import {
 import { createGameState, applyAction, getLegalPlays, getPlayHint } from '../engine/game-state';
 import { getAIAction } from '../ai/ai-player';
 import { delay, randomInt } from '../lib/utils';
+import { cardName } from '../engine/card';
 
 const AI_DELAY_MIN = 600;
 const AI_DELAY_MAX = 1200;
 
+const SEAT_NAMES: Record<PlayerSeat, string> = {
+  [PlayerSeat.South]: 'You',
+  [PlayerSeat.West]: 'West',
+  [PlayerSeat.East]: 'East',
+};
+
+const BID_SUIT_LABELS: Record<number, string> = {
+  [BidSuit.Spades]: '♠',
+  [BidSuit.Clubs]: '♣',
+  [BidSuit.Diamonds]: '♦',
+  [BidSuit.Hearts]: '♥',
+  [BidSuit.NoTrumps]: 'NT',
+};
+
 let gameState = $state<GameState>(createGameState());
 let isProcessing = $state(false);
 let lastHandResult = $state<string | null>(null);
+let gameLog = $state<string[]>([]);
+
+function logAction(action: GameAction) {
+  const msg = describeAction(action);
+  if (msg) {
+    gameLog.push(msg);
+  }
+}
+
+function describeAction(action: GameAction): string | null {
+  switch (action.type) {
+    case 'start_game':
+      return '--- New game started ---';
+    case 'deal':
+      return `Hand #${gameState.handNumber + 1} dealt (dealer: ${SEAT_NAMES[gameState.dealer]})`;
+    case 'bid': {
+      const who = SEAT_NAMES[action.seat];
+      const bid = describeBid(action.bid);
+      return `${who} bids: ${bid}`;
+    }
+    case 'reveal_talon':
+      return `Talon revealed: ${gameState.talon.map(cardName).join(', ')}`;
+    case 'discard':
+      return `Declarer discards: ${action.cards.map(cardName).join(', ')}`;
+    case 'declare_contract': {
+      const who = SEAT_NAMES[gameState.highBidder!];
+      return `${who} declares: ${describeBid(action.bid)}`;
+    }
+    case 'whist_decision': {
+      const who = SEAT_NAMES[action.seat];
+      return `${who}: ${action.decision}`;
+    }
+    case 'play_card': {
+      const who = SEAT_NAMES[action.seat];
+      const trickNum = gameState.tricks.length + 1;
+      return `${who} plays ${cardName(action.card)} (trick ${trickNum})`;
+    }
+    case 'start_raspasovka':
+      return `--- Raspasovka (×${gameState.raspasovkaMultiplier}) ---`;
+    case 'score_hand':
+      return formatScoreSummary();
+    case 'next_hand':
+      return null; // deal action will log
+    default:
+      return null;
+  }
+}
+
+function describeBid(bid: BidAction | WinningBid): string {
+  if (bid.type === 'pass') return 'Pass';
+  if (bid.type === 'misere') return 'Misere';
+  return `${bid.tricks}${BID_SUIT_LABELS[bid.suit]}`;
+}
+
+function formatScoreSummary(): string {
+  const lines = ['--- Score ---'];
+  for (const seat of [PlayerSeat.South, PlayerSeat.West, PlayerSeat.East] as PlayerSeat[]) {
+    const s = gameState.scores[seat];
+    const totalW = Object.values(s.whists).reduce((a, b) => a + b, 0);
+    lines.push(`  ${SEAT_NAMES[seat]}: pool=${s.pool} dump=${s.dump} whists=${totalW}`);
+  }
+  return lines.join('\n');
+}
 
 function dispatch(action: GameAction) {
+  logAction(action);
   gameState = applyAction(gameState, action);
+
+  // Log trick winners
+  if (action.type === 'play_card' && gameState.tricks.length > 0) {
+    const lastTrick = gameState.tricks[gameState.tricks.length - 1];
+    if (lastTrick.winner !== undefined) {
+      const prevTricks = gameState.tricks.length - 1;
+      // Only log if this is a new trick completion
+      const totalPlays = lastTrick.plays.length;
+      if (totalPlays === 3) {
+        const msg = `  → ${SEAT_NAMES[lastTrick.winner]} wins trick ${gameState.tricks.length}`;
+        gameLog.push(msg);
+          }
+    }
+  }
 }
 
 async function processAITurns() {
@@ -90,7 +184,12 @@ export function getLastHandResult(): string | null {
   return lastHandResult;
 }
 
+export function getGameLog(): string[] {
+  return gameLog;
+}
+
 export function startNewGame() {
+  gameLog = [];
   gameState = createGameState();
   dispatch({ type: 'start_game' });
   dispatch({ type: 'deal' });

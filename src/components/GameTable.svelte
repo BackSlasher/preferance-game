@@ -14,6 +14,7 @@
     nextHand,
     getPlayerLegalPlays,
     getPlayerPlayHint,
+    getGameLog,
   } from '../state/game-store.svelte';
 
   import PlayerHand from './PlayerHand.svelte';
@@ -26,6 +27,7 @@
   import DiscardPanel from './DiscardPanel.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
   import ScoreOverlay from './ScoreOverlay.svelte';
+  import GameLog from './GameLog.svelte';
   import Toast from './Toast.svelte';
 
   const NAMES = {
@@ -36,6 +38,7 @@
 
   let selectedDiscards = $state<Card[]>([]);
   let showScoreOverlay = $state(false);
+  let showGameLog = $state(false);
   let toastMessage = $state('');
   let toastVisible = $state(false);
   let toastTimer = $state<ReturnType<typeof setTimeout> | null>(null);
@@ -44,6 +47,7 @@
   const processing = $derived(getProcessing());
   const legalPlays = $derived(getPlayerLegalPlays());
   const playHint = $derived(getPlayerPlayHint());
+  const log = $derived(getGameLog());
   const isPlayerTurn = $derived(
     state.activePlayer === PlayerSeat.South && !processing
   );
@@ -183,6 +187,7 @@
     {/if}
     <div class="status-right">
       <span class="hand-num">Hand #{state.handNumber}</span>
+      <button class="log-btn" onclick={() => showGameLog = true} title="Game log">LOG</button>
       <a class="help-link" href="/instructions">?</a>
     </div>
   </div>
@@ -299,6 +304,10 @@
       onContinue={handleScoreContinue}
     />
   {/if}
+
+  {#if showGameLog}
+    <GameLog log={log} onClose={() => showGameLog = false} />
+  {/if}
 </div>
 
 <style>
@@ -337,6 +346,21 @@
 
   .hand-num {
     color: var(--text-muted);
+  }
+
+  .log-btn {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-muted);
+    font-size: 0.7em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .log-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--text-light);
   }
 
   .help-link {
