@@ -15,6 +15,7 @@
     getPlayerLegalPlays,
     getPlayerPlayHint,
     getGameLog,
+    resetGame,
   } from '../state/game-store.svelte';
 
   import PlayerHand from './PlayerHand.svelte';
@@ -176,6 +177,17 @@
       nextHand();
     }
   }
+
+  let showNewGameConfirm = $state(false);
+
+  function handleNewGame() {
+    showNewGameConfirm = true;
+  }
+
+  function confirmNewGame() {
+    showNewGameConfirm = false;
+    resetGame();
+  }
 </script>
 
 <div class="game-table">
@@ -189,6 +201,7 @@
       <span class="hand-num">Hand #{state.handNumber}</span>
       <button class="log-btn" onclick={() => showGameLog = true} title="Game log">LOG</button>
       <a class="help-link" href="/instructions">?</a>
+      <button class="new-game-btn" onclick={handleNewGame} title="New game">NEW</button>
     </div>
   </div>
 
@@ -308,6 +321,18 @@
   {#if showGameLog}
     <GameLog log={log} onClose={() => showGameLog = false} />
   {/if}
+
+  {#if showNewGameConfirm}
+    <div class="confirm-backdrop" role="button" tabindex="-1" onclick={() => showNewGameConfirm = false} onkeydown={(e) => e.key === 'Escape' && (showNewGameConfirm = false)}>
+      <div class="confirm-dialog" onclick={(e) => e.stopPropagation()} onkeydown={() => {}}>
+        <p>Abandon current game?</p>
+        <div class="confirm-buttons">
+          <button class="confirm-yes" onclick={confirmNewGame}>Yes, new game</button>
+          <button class="confirm-no" onclick={() => showNewGameConfirm = false}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -378,6 +403,77 @@
   }
 
   .help-link:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .new-game-btn {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(200, 60, 60, 0.4);
+    color: var(--text-muted);
+    font-size: 0.7em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .new-game-btn:hover {
+    background: rgba(200, 60, 60, 0.6);
+    color: var(--text-light);
+  }
+
+  .confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .confirm-dialog {
+    background: rgba(20, 60, 30, 0.95);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .confirm-dialog p {
+    color: var(--text-light);
+    font-size: 1em;
+    margin-bottom: 16px;
+  }
+
+  .confirm-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .confirm-yes {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: rgba(200, 60, 60, 0.8);
+    color: white;
+    font-weight: bold;
+    min-height: 44px;
+  }
+
+  .confirm-yes:hover {
+    background: rgba(200, 60, 60, 1);
+  }
+
+  .confirm-no {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-light);
+    font-weight: bold;
+    min-height: 44px;
+  }
+
+  .confirm-no:hover {
     background: rgba(255, 255, 255, 0.25);
   }
 

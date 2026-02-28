@@ -16,6 +16,7 @@ import { cardName } from '../engine/card';
 
 const AI_DELAY_MIN = 600;
 const AI_DELAY_MAX = 1200;
+const STORAGE_KEY = 'preferance-save';
 
 const SEAT_NAMES: Record<PlayerSeat, string> = {
   [PlayerSeat.South]: 'You',
@@ -31,10 +32,31 @@ const BID_SUIT_LABELS: Record<number, string> = {
   [BidSuit.NoTrumps]: 'NT',
 };
 
-let gameState = $state<GameState>(createGameState());
+function saveState(state: GameState, log: string[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, log }));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+function loadState(): { state: GameState; log: string[] } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data?.state?.phase !== undefined) return data;
+  } catch { /* corrupt — ignore */ }
+  return null;
+}
+
+function clearSave() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+const saved = loadState();
+let gameState = $state<GameState>(saved?.state ?? createGameState());
 let isProcessing = $state(false);
 let lastHandResult = $state<string | null>(null);
-let gameLog = $state<string[]>([]);
+let gameLog = $state<string[]>(saved?.log ?? []);
 
 function logAction(action: GameAction) {
   const msg = describeAction(action);
@@ -106,15 +128,15 @@ function dispatch(action: GameAction) {
   if (action.type === 'play_card' && gameState.tricks.length > 0) {
     const lastTrick = gameState.tricks[gameState.tricks.length - 1];
     if (lastTrick.winner !== undefined) {
-      const prevTricks = gameState.tricks.length - 1;
-      // Only log if this is a new trick completion
       const totalPlays = lastTrick.plays.length;
       if (totalPlays === 3) {
         const msg = `  → ${SEAT_NAMES[lastTrick.winner]} wins trick ${gameState.tricks.length}`;
         gameLog.push(msg);
-          }
+      }
     }
   }
+
+  saveState(gameState, gameLog);
 }
 
 async function processAITurns() {
@@ -188,12 +210,23 @@ export function getGameLog(): string[] {
   return gameLog;
 }
 
+// Resume AI turns if we loaded a saved state mid-AI-turn
+if (saved && saved.state.phase !== GamePhase.NotStarted && isAITurn()) {
+  processAITurns();
+}
+
 export function startNewGame() {
   gameLog = [];
   gameState = createGameState();
   dispatch({ type: 'start_game' });
   dispatch({ type: 'deal' });
   processAITurns();
+}
+
+export function resetGame() {
+  gameLog = [];
+  gameState = createGameState();
+  clearSave();
 }
 
 export async function playerBid(bid: BidAction) {
