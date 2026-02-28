@@ -1,18 +1,22 @@
 <script lang="ts">
   import { type PlayerScore, type PlayerSeat, ALL_SEATS } from '../engine/types';
+  import { finalSettlement } from '../engine/scoring';
 
   interface Props {
     scores: Record<PlayerSeat, PlayerScore>;
     names: Record<PlayerSeat, string>;
+    poolTarget: number;
     onContinue: () => void;
   }
 
-  let { scores, names, onContinue }: Props = $props();
+  let { scores, names, poolTarget, onContinue }: Props = $props();
 
   function totalWhists(seat: PlayerSeat): number {
     const w = scores[seat].whists;
     return ALL_SEATS.reduce((sum, s) => sum + (w[s] ?? 0), 0);
   }
+
+  const totals = $derived(finalSettlement(scores, poolTarget));
 </script>
 
 <div class="overlay-backdrop" role="button" tabindex="-1" onclick={onContinue} onkeydown={(e) => e.key === 'Escape' && onContinue()}>
@@ -26,6 +30,7 @@
           <th class="pool">Pool</th>
           <th class="dump">Dump</th>
           <th class="whist">Whists</th>
+          <th class="total">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -35,6 +40,7 @@
             <td class="pool">{scores[seat].pool}</td>
             <td class="dump">{scores[seat].dump}</td>
             <td class="whist">{totalWhists(seat)}</td>
+            <td class="total" class:positive={totals[seat] > 0} class:negative={totals[seat] < 0}>{Math.round(totals[seat])}</td>
           </tr>
         {/each}
       </tbody>
@@ -93,6 +99,9 @@
   .pool { color: #4caf50; }
   .dump { color: #f44336; }
   .whist { color: #90caf9; }
+  .total { color: var(--gold); font-weight: bold; }
+  .total.positive { color: #4caf50; }
+  .total.negative { color: #f44336; }
 
   .continue-btn {
     padding: 12px 32px;

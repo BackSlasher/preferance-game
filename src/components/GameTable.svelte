@@ -199,6 +199,7 @@
     {/if}
     <div class="status-right">
       <span class="hand-num">Hand #{state.handNumber}</span>
+      <button class="log-btn" onclick={() => showScoreOverlay = true} title="Scores">SCORE</button>
       <button class="log-btn" onclick={() => showGameLog = true} title="Game log">LOG</button>
       <a class="help-link" href="/instructions">?</a>
       <button class="new-game-btn" onclick={handleNewGame} title="New game">NEW</button>
@@ -314,6 +315,7 @@
     <ScoreOverlay
       scores={state.scores}
       names={NAMES}
+      poolTarget={state.settings.poolTarget}
       onContinue={handleScoreContinue}
     />
   {/if}
