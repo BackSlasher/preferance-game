@@ -1,9 +1,10 @@
 <script lang="ts">
   interface Props {
     onNewGame: () => void;
+    onHowToPlay: () => void;
   }
 
-  let { onNewGame }: Props = $props();
+  let { onNewGame, onHowToPlay }: Props = $props();
 </script>
 
 <div class="menu-screen">
@@ -14,6 +15,10 @@
 
     <button class="start-btn" onclick={onNewGame}>
       New Game
+    </button>
+
+    <button class="howto-btn" onclick={onHowToPlay}>
+      How to Play
     </button>
 
     <div class="rules-summary">
@@ -77,6 +82,23 @@
 
   .start-btn:active {
     transform: translateY(0);
+  }
+
+  .howto-btn {
+    display: block;
+    margin: 12px auto 0;
+    padding: 10px 32px;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-light);
+    min-height: 44px;
+    transition: background 0.15s;
+  }
+
+  .howto-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
   }
 
   .rules-summary {
