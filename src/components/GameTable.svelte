@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { GamePhase, PlayerSeat, type Card } from '../engine/types';
+  import { GamePhase, PlayerSeat, BidSuit, type Card } from '../engine/types';
   import { suitSymbol } from '../engine/card';
+  import { contractValue } from '../engine/scoring';
   import {
     getState,
     getProcessing,
@@ -81,6 +82,22 @@
       ? suitSymbol(state.contract.trump)
       : state.contract ? 'NT' : ''
   );
+
+  const suitLabels: Record<number, string> = {
+    [BidSuit.Spades]: '♠',
+    [BidSuit.Clubs]: '♣',
+    [BidSuit.Diamonds]: '♦',
+    [BidSuit.Hearts]: '♥',
+    [BidSuit.NoTrumps]: 'NT',
+  };
+
+  const contractLabel = $derived.by(() => {
+    const c = state.contract;
+    if (!c) return '';
+    const bid = c.bid;
+    if (bid.type === 'misere') return `Misere (${contractValue(bid)}pts)`;
+    return `${bid.tricks}${suitLabels[bid.suit]} (${contractValue(bid)}pts)`;
+  });
 
   const phaseLabel = $derived(getPhaseLabel(state.phase, processing, isPlayerTurn));
 
@@ -164,7 +181,10 @@
     {#if trumpLabel}
       <span class="trump-label">Trump: {trumpLabel}</span>
     {/if}
-    <span class="hand-num">Hand #{state.handNumber}</span>
+    <div class="status-right">
+      <span class="hand-num">Hand #{state.handNumber}</span>
+      <a class="help-link" href="/instructions">?</a>
+    </div>
   </div>
 
   <!-- Top area: opponents + trick -->
@@ -175,6 +195,8 @@
         score={state.scores[PlayerSeat.West]}
         isActive={state.activePlayer === PlayerSeat.West}
         isDealer={state.dealer === PlayerSeat.West}
+        isDeclarer={state.contract?.declarer === PlayerSeat.West}
+        contractLabel={state.contract?.declarer === PlayerSeat.West ? contractLabel : ''}
         trickCount={state.trickCounts[PlayerSeat.West]}
       />
       <OpponentHand
@@ -203,6 +225,8 @@
         score={state.scores[PlayerSeat.East]}
         isActive={state.activePlayer === PlayerSeat.East}
         isDealer={state.dealer === PlayerSeat.East}
+        isDeclarer={state.contract?.declarer === PlayerSeat.East}
+        contractLabel={state.contract?.declarer === PlayerSeat.East ? contractLabel : ''}
         trickCount={state.trickCounts[PlayerSeat.East]}
       />
       <OpponentHand
@@ -251,6 +275,8 @@
       score={state.scores[PlayerSeat.South]}
       isActive={state.activePlayer === PlayerSeat.South}
       isDealer={state.dealer === PlayerSeat.South}
+      isDeclarer={state.contract?.declarer === PlayerSeat.South}
+      contractLabel={state.contract?.declarer === PlayerSeat.South ? contractLabel : ''}
       trickCount={state.trickCounts[PlayerSeat.South]}
     />
     {#if playHint && isTrickPhase && isPlayerTurn}
@@ -303,8 +329,32 @@
     font-size: 1.1em;
   }
 
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .hand-num {
     color: var(--text-muted);
+  }
+
+  .help-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-light);
+    font-weight: bold;
+    font-size: 0.9em;
+    text-decoration: none;
+  }
+
+  .help-link:hover {
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .top-area {

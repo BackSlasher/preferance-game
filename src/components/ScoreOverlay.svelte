@@ -8,6 +8,11 @@
   }
 
   let { scores, names, onContinue }: Props = $props();
+
+  function totalWhists(seat: PlayerSeat): number {
+    const w = scores[seat].whists;
+    return ALL_SEATS.reduce((sum, s) => sum + (w[s] ?? 0), 0);
+  }
 </script>
 
 <div class="overlay-backdrop" role="button" tabindex="-1" onclick={onContinue} onkeydown={(e) => e.key === 'Escape' && onContinue()}>
@@ -20,6 +25,7 @@
           <th>Player</th>
           <th class="pool">Pool</th>
           <th class="dump">Dump</th>
+          <th class="whist">Whists</th>
         </tr>
       </thead>
       <tbody>
@@ -28,6 +34,7 @@
             <td>{names[seat]}</td>
             <td class="pool">{scores[seat].pool}</td>
             <td class="dump">{scores[seat].dump}</td>
+            <td class="whist">{totalWhists(seat)}</td>
           </tr>
         {/each}
       </tbody>
@@ -85,6 +92,7 @@
 
   .pool { color: #4caf50; }
   .dump { color: #f44336; }
+  .whist { color: #90caf9; }
 
   .continue-btn {
     padding: 12px 32px;

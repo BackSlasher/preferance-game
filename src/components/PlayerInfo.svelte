@@ -6,17 +6,23 @@
     score: PlayerScore;
     isActive: boolean;
     isDealer: boolean;
+    isDeclarer: boolean;
+    contractLabel: string;
     trickCount: number;
   }
 
-  let { name, score, isActive, isDealer, trickCount }: Props = $props();
+  let { name, score, isActive, isDealer, isDeclarer, contractLabel, trickCount }: Props = $props();
 </script>
 
-<div class="player-info" class:active={isActive}>
+<div class="player-info" class:active={isActive} class:declarer={isDeclarer}>
   <div class="player-name">
     {name}
     {#if isDealer}<span class="dealer-badge">D</span>{/if}
+    {#if isDeclarer}<span class="declarer-badge">★</span>{/if}
   </div>
+  {#if isDeclarer && contractLabel}
+    <div class="contract-label">{contractLabel}</div>
+  {/if}
   <div class="player-stats">
     <span class="stat pool" title="Pool">{score.pool}</span>
     <span class="stat-sep">/</span>
@@ -40,9 +46,32 @@
     outline: 2px solid var(--gold);
   }
 
+  .player-info.declarer {
+    background: rgba(212, 168, 67, 0.15);
+    outline: 1px solid rgba(212, 168, 67, 0.4);
+  }
+
+  .player-info.declarer.active {
+    outline: 2px solid var(--gold);
+  }
+
   .player-name {
     font-weight: bold;
     font-size: 0.85em;
+    margin-bottom: 2px;
+  }
+
+  .declarer-badge {
+    color: var(--gold);
+    font-size: 0.7em;
+    margin-left: 3px;
+    vertical-align: middle;
+  }
+
+  .contract-label {
+    font-size: 0.75em;
+    color: var(--gold);
+    font-weight: bold;
     margin-bottom: 2px;
   }
 
