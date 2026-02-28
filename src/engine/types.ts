@@ -102,6 +102,7 @@ export interface GameSettings {
   whistType: 'greedy' | 'responsible';
   misereMode: 'selfish' | 'cooperative';
   gameOfTen: boolean;
+  debugLog: boolean;
 }
 
 export interface GameState {

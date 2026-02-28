@@ -37,23 +37,30 @@ export function chooseDiscards(
 function discardScore(card: Card, trump: Suit | null, hand: Card[]): number {
   let score = 0;
 
-  // Never discard trumps if possible
+  // Never discard trumps
   if (trump !== null && card.suit === trump) {
     score += 100;
   }
 
-  // High cards are valuable
+  // High cards are valuable to keep
   score += card.rank * 2;
 
-  // Cards in short suits are good discard candidates (creating voids)
   const suitCount = hand.filter(c => c.suit === card.suit).length;
-  if (suitCount <= 2 && (trump === null || card.suit !== trump)) {
-    score -= 20; // Incentivize discarding from short off-suits
-  }
 
-  // Singletons in off-suits are great for ruffing — don't discard them
-  if (suitCount === 1 && trump !== null && card.suit !== trump) {
-    score += 15;
+  if (trump !== null && card.suit !== trump) {
+    // With trumps: singletons are great for ruffing — keep them
+    if (suitCount === 1) {
+      score += 25;
+    }
+    // Doubletons: discard the low card to create singleton for ruffing
+    else if (suitCount === 2) {
+      score -= 10;
+    }
+  } else if (trump === null) {
+    // NT or misere: short suits are risky, long suits with high cards are good
+    if (suitCount <= 2) {
+      score -= 5; // Short suits in NT are weak — discard from them
+    }
   }
 
   return score;

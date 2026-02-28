@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   whistType: 'greedy',
   misereMode: 'selfish',
   gameOfTen: true,
+  debugLog: false,
 };
 
 /** Create the initial game state */

@@ -39,8 +39,9 @@ function declarerPlay(legal: Card[], state: GameState, seat: PlayerSeat): Card {
     if (trump !== null && trump !== undefined) {
       const trumpCards = legal.filter(c => c.suit === trump);
       if (trumpCards.length > 0) {
-        // Lead highest trump
-        return trumpCards.sort((a, b) => b.rank - a.rank)[0];
+        // Lead lowest trump to draw out opponents' trumps cheaply
+        // (save high trumps for winning contested tricks later)
+        return trumpCards.sort((a, b) => a.rank - b.rank)[0];
       }
     }
     // Lead from longest suit, highest card
@@ -105,26 +106,32 @@ function raspasovkaPlay(legal: Card[], state: GameState, seat: PlayerSeat): Card
   return legal.sort((a, b) => b.rank - a.rank)[0];
 }
 
-/** Defensive lead: lowest card from longest non-trump suit */
+/** Defensive lead: prefer Aces (cash winners), then honor sequences, then longest non-trump */
 function leadDefensive(legal: Card[], state: GameState): Card {
   const trump = state.contract?.trump ?? null;
   const seat = state.activePlayer;
   const hand = state.hands[seat];
 
-  // Count suit lengths, prefer non-trump suits
+  // Count suit lengths
   const counts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0 };
   for (const c of hand) counts[c.suit]++;
 
-  // Sort: longest non-trump suit first, then lowest rank
+  // Prefer leading Aces in non-trump suits (cash sure winners first)
+  const nonTrumpAces = legal.filter(c =>
+    c.rank === Rank.Ace && (trump === null || c.suit !== trump)
+  );
+  if (nonTrumpAces.length > 0) {
+    // Lead Ace from shortest suit (maximizes ruffing potential later)
+    return nonTrumpAces.sort((a, b) => counts[a.suit] - counts[b.suit])[0];
+  }
+
+  // Sort: non-trump first, then longest suit, then lowest rank
   return [...legal].sort((a, b) => {
     const aIsTrump = trump !== null && a.suit === trump;
     const bIsTrump = trump !== null && b.suit === trump;
-    // Prefer non-trump leads
     if (aIsTrump !== bIsTrump) return aIsTrump ? 1 : -1;
-    // Then longest suit
     const lenDiff = counts[b.suit] - counts[a.suit];
     if (lenDiff !== 0) return lenDiff;
-    // Then lowest rank
     return a.rank - b.rank;
   })[0];
 }

@@ -6,7 +6,25 @@ import {
   BidSuit,
 } from '../engine/types';
 import { isValidBid, getValidBids } from '../engine/bidding';
-import { evaluateHand, bestTrumpSuit } from './hand-evaluation';
+import { evaluateHand, bestTrumpSuit, type HandEvaluation } from './hand-evaluation';
+
+const SUIT_LABELS: Record<number, string> = {
+  [BidSuit.Spades]: '♠', [BidSuit.Clubs]: '♣',
+  [BidSuit.Diamonds]: '♦', [BidSuit.Hearts]: '♥', [BidSuit.NoTrumps]: 'NT',
+};
+
+export function explainBidReasoning(hand: Card[], currentHighBid: WinningBid | null): string {
+  const eval_ = evaluateHand(hand);
+  const bestSuit = bestTrumpSuit(eval_);
+  const lines: string[] = [];
+  lines.push(`  HCP=${eval_.highCardPoints}`);
+  for (const s of [BidSuit.Spades, BidSuit.Clubs, BidSuit.Diamonds, BidSuit.Hearts, BidSuit.NoTrumps]) {
+    lines.push(`  ${SUIT_LABELS[s]}: ${eval_.expectedTricks[s].toFixed(1)} tricks`);
+  }
+  lines.push(`  Misere viability: ${eval_.misereViability.toFixed(2)}`);
+  lines.push(`  Best suit: ${SUIT_LABELS[bestSuit]} (${eval_.expectedTricks[bestSuit].toFixed(1)})`);
+  return lines.join('\n');
+}
 
 /**
  * AI decides what to bid.
@@ -29,8 +47,8 @@ export function decideBid(
   const bestSuit = bestTrumpSuit(eval_);
   const bestExpected = eval_.expectedTricks[bestSuit];
 
-  // Consider misere if viable
-  if (eval_.misereViability > 0.7) {
+  // Consider misere if viable (high threshold — misere failure is very costly)
+  if (eval_.misereViability > 0.85) {
     const misereBid: WinningBid = { type: 'misere' };
     if (valid.some(b => b.type === 'misere')) {
       return misereBid;

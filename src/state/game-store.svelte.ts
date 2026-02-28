@@ -14,6 +14,8 @@ import { getAIAction } from '../ai/ai-player';
 import { delay, randomInt } from '../lib/utils';
 import { cardName } from '../engine/card';
 import { getSettings } from './settings.svelte';
+import { explainBidReasoning } from '../ai/bidding-ai';
+import { ALL_SEATS } from '../engine/types';
 
 const AI_DELAY_MIN = 600;
 const AI_DELAY_MAX = 1200;
@@ -121,9 +123,47 @@ function formatScoreSummary(): string {
   return lines.join('\n');
 }
 
+function isDebug(): boolean {
+  return gameState.settings.debugLog;
+}
+
+function logDebug(msg: string) {
+  if (isDebug()) {
+    gameLog.push(msg);
+  }
+}
+
+function logHandsDebug() {
+  if (!isDebug()) return;
+  for (const seat of ALL_SEATS) {
+    const hand = gameState.hands[seat].map(cardName).join(' ');
+    gameLog.push(`  [${SEAT_NAMES[seat]}] ${hand}`);
+  }
+}
+
 function dispatch(action: GameAction) {
+  // Pre-dispatch debug: log AI reasoning before the action
+  if (isDebug()) {
+    if (action.type === 'bid' && action.seat !== PlayerSeat.South) {
+      const reasoning = explainBidReasoning(gameState.hands[action.seat], gameState.highBid);
+      gameLog.push(`  [${SEAT_NAMES[action.seat]} reasoning]\n${reasoning}`);
+    }
+    if (action.type === 'whist_decision' && action.seat !== PlayerSeat.South) {
+      gameLog.push(`  [${SEAT_NAMES[action.seat]} hand] ${gameState.hands[action.seat].map(cardName).join(' ')}`);
+    }
+    if (action.type === 'play_card' && action.seat !== PlayerSeat.South) {
+      const hand = gameState.hands[action.seat].map(cardName).join(' ');
+      gameLog.push(`  [${SEAT_NAMES[action.seat]} hand] ${hand}`);
+    }
+  }
+
   logAction(action);
   gameState = applyAction(gameState, action);
+
+  // Post-dispatch debug: log hands after deal
+  if (action.type === 'deal' || action.type === 'next_hand') {
+    logHandsDebug();
+  }
 
   // Log trick winners
   if (action.type === 'play_card' && gameState.tricks.length > 0) {

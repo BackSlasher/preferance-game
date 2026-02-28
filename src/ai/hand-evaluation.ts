@@ -102,25 +102,33 @@ function estimateTricksNT(hand: Card[], suitLengths: Record<Suit, number>): numb
 }
 
 function evaluateMisere(hand: Card[], suitLengths: Record<Suit, number>): number {
-  let score = 1.0;
+  let score = 0.6; // Start neutral — need positive signals to go above threshold
 
   for (const card of hand) {
-    // Aces are terrible for misere
-    if (card.rank === Rank.Ace) score -= 0.25;
-    if (card.rank === Rank.King) score -= 0.15;
+    // High cards are terrible for misere (can win tricks)
+    if (card.rank === Rank.Ace) score -= 0.35;
+    else if (card.rank === Rank.King) score -= 0.2;
+    else if (card.rank === Rank.Queen) score -= 0.1;
+    else if (card.rank === Rank.Ten) score -= 0.05;
     // Low cards are good
-    if (card.rank === Rank.Seven) score += 0.05;
-    if (card.rank === Rank.Eight) score += 0.03;
+    else if (card.rank === Rank.Seven) score += 0.06;
+    else if (card.rank === Rank.Eight) score += 0.04;
   }
 
   // Long suits are dangerous (more chances to win tricks)
   for (const suit of ALL_SUITS) {
-    if (suitLengths[suit] >= 4) score -= 0.15 * (suitLengths[suit] - 3);
+    if (suitLengths[suit] >= 4) score -= 0.2 * (suitLengths[suit] - 3);
   }
 
-  // Voids are good (can't be forced to follow)
+  // Voids are great (can't be forced to follow)
   for (const suit of ALL_SUITS) {
-    if (suitLengths[suit] === 0) score += 0.1;
+    if (suitLengths[suit] === 0) score += 0.15;
+    else if (suitLengths[suit] === 1) {
+      // Singleton — good if it's low, terrible if it's high
+      const singleton = hand.find(c => c.suit === suit)!;
+      if (singleton.rank <= Rank.Nine) score += 0.08;
+      else if (singleton.rank >= Rank.King) score -= 0.15;
+    }
   }
 
   return Math.max(0, Math.min(1, score));

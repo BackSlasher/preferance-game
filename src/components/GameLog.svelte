@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getSettings, updateSettings } from '../state/settings.svelte';
+
   interface Props {
     log: string[];
     onClose: () => void;
@@ -6,21 +8,33 @@
 
   let { log, onClose }: Props = $props();
 
+  const settings = $derived(getSettings());
+
   let scrollEl = $state<HTMLDivElement | null>(null);
 
   $effect(() => {
-    // scroll to bottom when log updates
     if (scrollEl && log.length) {
       scrollEl.scrollTop = scrollEl.scrollHeight;
     }
   });
+
+  function toggleDebug() {
+    updateSettings({ debugLog: !settings.debugLog });
+  }
 </script>
 
 <div class="log-backdrop" role="button" tabindex="-1" onclick={onClose} onkeydown={(e) => e.key === 'Escape' && onClose()}>
   <div class="log-panel" onclick={(e) => e.stopPropagation()} onkeydown={() => {}}>
     <div class="log-header">
       <h2>Game Log</h2>
-      <button class="close-btn" onclick={onClose}>✕</button>
+      <div class="header-controls">
+        <button
+          class="debug-toggle"
+          class:on={settings.debugLog}
+          onclick={toggleDebug}
+        >DEBUG</button>
+        <button class="close-btn" onclick={onClose}>✕</button>
+      </div>
     </div>
     <div class="log-content" bind:this={scrollEl}>
       {#each log as entry}
@@ -67,6 +81,31 @@
     color: var(--gold);
     font-size: 1em;
     font-family: 'Georgia', serif;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .debug-toggle {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+  }
+
+  .debug-toggle.on {
+    background: rgba(76, 175, 80, 0.4);
+    color: #4caf50;
+  }
+
+  .debug-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .close-btn {
