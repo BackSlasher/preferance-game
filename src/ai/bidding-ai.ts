@@ -40,8 +40,8 @@ export function decideBid(
   const eval_ = evaluateHand(hand);
   const valid = getValidBids(currentHighBid, seat, dealer);
 
-  // Safety margin: need ~0.5 extra expected tricks above bid level
-  const SAFETY = 0.5;
+  // Safety margin: slight buffer above bid level
+  const SAFETY = 0.3;
 
   // Find the best suit and its expected tricks
   const bestSuit = bestTrumpSuit(eval_);
@@ -58,28 +58,20 @@ export function decideBid(
   // Find the highest bid we're comfortable making
   let bestBid: BidAction = { type: 'pass' };
 
+  // Opening bid: more willing (just need expected >= tricks)
+  // Competing bid: need safety margin on top
+  const isOpening = currentHighBid === null;
+  const margin = isOpening ? 0 : SAFETY;
+
   for (const bid of valid) {
     if (bid.type === 'pass' || bid.type === 'misere') continue;
     if (bid.type !== 'suit') continue;
 
     const suitExpected = eval_.expectedTricks[bid.suit];
-    if (suitExpected >= bid.tricks + SAFETY) {
+    if (suitExpected >= bid.tricks + margin) {
       bestBid = bid;
-    } else if (bid.suit === bestSuit && bestExpected >= bid.tricks + SAFETY) {
+    } else if (bid.suit === bestSuit && bestExpected >= bid.tricks + margin) {
       bestBid = bid;
-    }
-  }
-
-  // If we can only match but not raise, and we have a decent hand, match
-  if (bestBid.type === 'pass' && currentHighBid !== null) {
-    // Consider matching the current bid with our best suit
-    for (const bid of valid) {
-      if (bid.type !== 'suit') continue;
-      const expected = eval_.expectedTricks[bid.suit];
-      if (expected >= bid.tricks) {
-        bestBid = bid;
-        break;
-      }
     }
   }
 

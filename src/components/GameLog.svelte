@@ -31,6 +31,39 @@
     restartHand();
     onClose();
   }
+
+  let copyLabel = $state('Copy AI Log');
+
+  function copyAILog() {
+    const lines: string[] = [];
+    for (const raw of log) {
+      const isDebug = raw.startsWith(DEBUG_PREFIX);
+      const text = isDebug ? raw.slice(1) : raw;
+
+      if (isDebug) {
+        lines.push(text);
+      } else if (
+        text.includes('bids:') ||
+        text.includes('declares:') ||
+        text.includes('plays ') ||
+        text.includes('wins trick') ||
+        text.includes('Talon') ||
+        text.includes('discards') ||
+        text.startsWith('---') ||
+        text.includes('Hand #') ||
+        text.includes(': whist') ||
+        text.includes(': pass')
+      ) {
+        lines.push(text);
+      }
+    }
+
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      copyLabel = 'Copied!';
+      setTimeout(() => copyLabel = 'Copy AI Log', 1500);
+    });
+  }
 </script>
 
 <div class="log-backdrop" role="button" tabindex="-1" onclick={onClose} onkeydown={(e) => e.key === 'Escape' && onClose()}>
@@ -55,6 +88,7 @@
       {/if}
     </div>
     <div class="log-footer">
+      <button class="copy-btn" onclick={copyAILog}>{copyLabel}</button>
       <button class="restart-btn" onclick={handleRestart}>Restart Hand</button>
     </div>
   </div>
@@ -170,7 +204,22 @@
   .log-footer {
     padding: 8px 12px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .copy-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 0.75em;
+    font-weight: bold;
+    background: rgba(144, 202, 249, 0.2);
+    color: #90caf9;
+  }
+
+  .copy-btn:hover {
+    background: rgba(144, 202, 249, 0.4);
   }
 
   .restart-btn {
